@@ -10,7 +10,7 @@ LIMIT_MEMBER_COUNT = 7
 
 
 @listen_to('.+')
-def listen_func(message):
+def listen(message):
     send_user = message.channel._client.users[message.body['user']]['name']
     message_text = message.body['text']
     if g_status['is_open']:
@@ -33,14 +33,14 @@ def end(message):
     attendee_list = list(set(g_status['attendee_list']))
     if len(attendee_list) >= LIMIT_MEMBER_COUNT:
         random.shuffle(attendee_list)
-        member_count = len(attendee_list)//2
+        member_count = len(attendee_list) // 2
         message.send('*チームガスパッチョ*')
         for name in attendee_list[:member_count]:
             message.send(name)
         message.send('*チームデンパッチョ*')
         for name in attendee_list[member_count:]:
             message.send(name)
-        
+
     else:
         message.send('*チームガスパッチョ*')
         for name in attendee_list:
