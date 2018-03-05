@@ -21,13 +21,13 @@ def listen(message):
 
 @respond_to('募集')
 def start(message):
-    message.send('募集を開始します @here')
+    message.send('募集を開始します <!here>')
     g_status['is_open'] = True
 
 
 @respond_to('終了')
 def end(message):
-    message.send('募集を終了します @here')
+    message.send('募集を終了します <!here>')
     g_status['is_open'] = False
     print(g_status['attendee_list'])
     attendee_list = list(set(g_status['attendee_list']))
