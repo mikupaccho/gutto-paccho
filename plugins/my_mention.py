@@ -63,7 +63,7 @@ def end(message):
     splitted_attendee_list = _split_attendee_list(attendee_list, LIMIT_MEMBER_COUNT)
 
     # 各グループごとに名前をランダム生成してslackに通知
-    for i, attendee_group in enumerate(splitted_attendee_list):
+    for attendee_group in splitted_attendee_list:
         team_name = random.sample(KATAKANA, 2)
         message.send('*チーム{}{}パッチョ*'.format(team_name[0], team_name[1]))
         for name in attendee_group:
