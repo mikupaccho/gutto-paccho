@@ -57,7 +57,7 @@ def _split_attendee_list(attendee_list, limit_member_count):
     各グループに配属された参加者のリストのジェネレータ。
     """
     n_teams = math.ceil(len(attendee_list) / limit_member_count)
-    for i_chunk in range(n_teams):
+    for i_chunk in range(int(n_teams)):
         yield attendee_list[i_chunk * len(attendee_list) // n_teams:(i_chunk + 1) * len(attendee_list) // n_teams]
 
 
