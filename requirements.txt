@@ -1,0 +1,9 @@
+certifi==2018.1.18
+chardet==3.0.4
+idna==2.6
+requests==2.18.4
+six==1.11.0
+slackbot==0.5.1
+slacker==0.9.60
+urllib3==1.22
+websocket-client==0.47.0
