@@ -51,7 +51,7 @@ def _split_attendee_list(attendee_list, limit_member_count):
 
 @respond_to('終了')
 def end(message):
-    message.send('募集を終了します <!here>')
+    message.send('募集終了だパッチョ <!here>')
     g_status['is_open'] = False
     print(g_status['attendee_list'])
     attendee_list = list(set(g_status['attendee_list']))
