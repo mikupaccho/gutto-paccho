@@ -27,7 +27,7 @@ def listen(message):
 
 @respond_to('募集')
 def start(message):
-    message.send('募集を開始します <!here>')
+    message.send('はらぺこ軍団全員集合〜「はい」って応答するパッチョ <!here>')
     g_status['is_open'] = True
 
 
