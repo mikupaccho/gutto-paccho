@@ -15,6 +15,9 @@ KATAKANA |= {'キャ', 'キュ', 'キョ', 'ギャ', 'ギュ', 'ギョ', 'シャ
 KATAKANA |= {'ジョ', 'ニャ', 'ニュ', 'ニョ', 'ミャ', 'ミュ', 'ミョ', 'ヒャ', 'ヒュ', 'ヒョ', 'チャ'}
 KATAKANA |= {'チュ', 'チョ', 'リャ', 'リュ', 'リョ', 'ヴァ', 'ヴィ', 'ヴェ', 'ー', 'ン'}
 
+# YESと判断されるメッセージリスト
+YES_MESSAGE_LIST = ['はい', '行きます', 'おなかすいた']
+
 
 @listen_to('.+')
 def listen(message):
@@ -22,13 +25,13 @@ def listen(message):
     message_text = message.body['text']
     if g_status['is_open']:
         print(send_user, message_text)
-        if message_text in ['はい', '行きます', 'おなかすいた']:
+        if message_text in YES_MESSAGE_LIST:
             g_status['attendee_list'].append('<@{}>'.format(send_user))
 
 
 @respond_to('(.+)?募集')
 def start(message, how_to):
-    start_message = 'はらぺこ軍団全員集合〜「はい」って応答するパッチョ'
+    start_message = 'はらぺこ軍団全員集合〜「{}」って応答するパッチョ'.format(' か、'.join(YES_MESSAGE_LIST))
     if how_to and '静か' in how_to:
         start_message += '(こっそり)'
         g_status['is_silent'] = True
