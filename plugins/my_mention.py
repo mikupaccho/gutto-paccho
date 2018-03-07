@@ -27,6 +27,7 @@ def listen(message):
         print(send_user, message_text)
         if message_text in YES_MESSAGE_LIST:
             g_status['attendee_list'].append('<@{}>'.format(send_user))
+            message.react('+1')
 
 
 @respond_to('(.+)?募集')
