@@ -4,6 +4,7 @@ from slackbot.bot import listen_to, respond_to
 
 g_status = {
     'is_open': False,
+    'is_silent': False,
     'attendee_list': [],
 }
 
@@ -14,6 +15,9 @@ KATAKANA |= {'キャ', 'キュ', 'キョ', 'ギャ', 'ギュ', 'ギョ', 'シャ
 KATAKANA |= {'ジョ', 'ニャ', 'ニュ', 'ニョ', 'ミャ', 'ミュ', 'ミョ', 'ヒャ', 'ヒュ', 'ヒョ', 'チャ'}
 KATAKANA |= {'チュ', 'チョ', 'リャ', 'リュ', 'リョ', 'ヴァ', 'ヴィ', 'ヴェ', 'ー', 'ン'}
 
+# YESと判断されるメッセージリスト
+YES_MESSAGE_LIST = ['はい', '行きます', 'おなかすいた']
+
 
 @listen_to('.+')
 def listen(message):
@@ -21,13 +25,21 @@ def listen(message):
     message_text = message.body['text']
     if g_status['is_open']:
         print(send_user, message_text)
-        if message_text in ['はい', '行きます', 'おなかすいた']:
+        if message_text in YES_MESSAGE_LIST:
             g_status['attendee_list'].append('<@{}>'.format(send_user))
+            message.react('+1')
 
 
-@respond_to('募集')
-def start(message):
-    message.send('はらぺこ軍団全員集合〜「はい」って応答するパッチョ <!here>')
+@respond_to('(.+)?募集')
+def start(message, how_to):
+    start_message = 'はらぺこ軍団全員集合〜「{}」って応答するパッチョ'.format(' か、'.join(YES_MESSAGE_LIST))
+    if how_to and '静か' in how_to:
+        start_message += '(こっそり)'
+        g_status['is_silent'] = True
+    else:
+        start_message += '<!here>'
+
+    message.send(start_message)
     g_status['is_open'] = True
 
 
@@ -45,14 +57,28 @@ def _split_attendee_list(attendee_list, limit_member_count):
     各グループに配属された参加者のリストのジェネレータ。
     """
     n_teams = math.ceil(len(attendee_list) / limit_member_count)
-    for i_chunk in range(n_teams):
+    for i_chunk in range(int(n_teams)):
         yield attendee_list[i_chunk * len(attendee_list) // n_teams:(i_chunk + 1) * len(attendee_list) // n_teams]
+
+
+def _reset_state():
+    """
+    募集状態のステータスをクリアにする
+    :return:
+    """
+    g_status['is_open'] = False
+    g_status['is_silent'] = False
+    g_status['attendee_list'] = []
 
 
 @respond_to('終了')
 def end(message):
-    message.send('募集終了だパッチョ <!here>')
-    g_status['is_open'] = False
+    end_message = '募集終了だパッチョ '
+    if g_status['is_silent']:
+        end_message += '(こっそり)'
+    else:
+        end_message += '<!here>'
+
     print(g_status['attendee_list'])
     attendee_list = list(set(g_status['attendee_list']))
 
@@ -68,4 +94,5 @@ def end(message):
         message.send('*チーム{}{}パッチョ*'.format(team_name[0], team_name[1]))
         for name in attendee_group:
             message.send(name)
-    g_status['attendee_list'] = []
+    # 募集状態のリセット
+    _reset_state()
