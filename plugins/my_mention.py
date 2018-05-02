@@ -21,13 +21,17 @@ YES_MESSAGE_LIST = ['はい', '行きます', 'おなかすいた']
 
 @listen_to('.+')
 def listen(message):
-    send_user = message.channel._client.users[message.body['user']]['name']
-    message_text = message.body['text']
-    if g_status['is_open']:
-        print(send_user, message_text)
-        if message_text in YES_MESSAGE_LIST:
-            g_status['attendee_list'].append('<@{}>'.format(send_user))
-            message.react('+1')
+    user = message.body.get('user')
+    if user:
+        send_user = message.channel._client.users[user]['name']
+        message_text = message.body['text']
+        if g_status['is_open']:
+            print(send_user, message_text)
+            if message_text in YES_MESSAGE_LIST:
+                g_status['attendee_list'].append('<@{}>'.format(send_user))
+                message.react('+1')
+    else:
+        message.send('誰？')
 
 
 @respond_to('(.+)?募集')
