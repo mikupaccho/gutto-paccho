@@ -10,4 +10,5 @@ DEFAULT_REPLY = '何言ってるんでしょうね、こいつ'
 PLUGINS = ['plugins']
 
 # デプロイ権限をもつ管理ユーザ名のリスト
-ADMIN_USER_NAME_LIST = ['']
+# export paccho_admin_users=hoge,foo,bar のようにカンマ区切りで複数指定できる
+ADMIN_USER_NAME_LIST = os.environ.get('paccho_admin_users', '').split(',')
