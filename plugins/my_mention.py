@@ -1,6 +1,8 @@
 import math
 import random
-from slackbot.bot import listen_to, respond_to
+from slackbot.bot import listen_to, respond_to, settings
+
+from .utils.git_client import git_pull, get_hash
 
 g_status = {
     'is_open': False,
@@ -21,9 +23,8 @@ YES_MESSAGE_LIST = ['はい', '行きます', 'おなかすいた']
 
 @listen_to('.+')
 def listen(message):
-    user = message.body.get('user')
-    if user:
-        send_user = message.channel._client.users[user]['name']
+    send_user = _get_user_name(message)
+    if send_user:
         message_text = message.body['text']
         if g_status['is_open']:
             print(send_user, message_text)
@@ -100,3 +101,31 @@ def end(message):
             message.send(name)
     # 募集状態のリセット
     _reset_state()
+
+
+@respond_to('デプロイ')
+def deploy(message):
+    request_user_name = _get_user_name(message)
+    if request_user_name in settings.ADMIN_USER_NAME_LIST:
+        message.send('デプロイするぱっちょ')
+        git_pull()
+    else:
+        message.send('{} はデプロイするには権限が足りないぱっちょ'.format(request_user_name))
+
+
+@respond_to('バージョン')
+def deploy(message):
+    current_hash = get_hash()
+    message.send('現在のぱっちょのバージョンは[{}] だぱっちょ'.format(current_hash))
+
+
+def _get_user_name(message):
+    """
+    :param message:
+    :return: str or None
+    """
+    user = message.body.get('user')
+    if not user:
+        return None
+    user_name = message.channel._client.users[user]['name']
+    return user_name

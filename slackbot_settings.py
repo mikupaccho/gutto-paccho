@@ -8,3 +8,6 @@ DEFAULT_REPLY = '何言ってるんでしょうね、こいつ'
 
 # プラグインスクリプトを置いてあるサブディレクトリ名のリスト
 PLUGINS = ['plugins']
+
+# デプロイ権限をもつ管理ユーザ名のリスト
+ADMIN_USER_NAME_LIST = ['']
