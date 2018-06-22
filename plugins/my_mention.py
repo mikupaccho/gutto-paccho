@@ -1,5 +1,6 @@
 import math
 import random
+import unicodedata
 from slackbot.bot import listen_to, respond_to, settings
 
 from .utils.git_client import git_pull, get_hash
@@ -8,9 +9,10 @@ g_status = {
     'is_open': False,
     'is_silent': False,
     'attendee_list': [],
+    'member_limit': None,
 }
 
-LIMIT_MEMBER_COUNT = 6
+DEFAULT_LIMIT_MEMBER_COUNT = 6
 KATAKANA = {chr(n) for n in range(ord(str('ァ')), ord(str('ヾ')))} - {'・', 'ヵ', 'ヶ'}
 KATAKANA -= {'ァ', 'ィ', 'ゥ', 'ェ', 'ォ', 'ッ', 'ャ', 'ュ', 'ョ', 'ヽ', 'ヾ', 'ヮ', 'ー', 'ン'}
 KATAKANA |= {'キャ', 'キュ', 'キョ', 'ギャ', 'ギュ', 'ギョ', 'シャ', 'シュ', 'ショ', 'ジャ', 'ジュ'}
@@ -22,6 +24,7 @@ YES_MESSAGE_LIST = ['はい', '行きます', 'おなかすいた']
 
 
 @listen_to('.+')
+@respond_to('.+')
 def listen(message):
     send_user = _get_user_name(message)
     if send_user:
@@ -35,9 +38,17 @@ def listen(message):
         message.send('誰？')
 
 
-@respond_to('(.+)?募集')
-def start(message, how_to):
+@respond_to('(.+)?募集\s*(?:(\d+)\s*人組[で！。]?)?')
+def start(message, how_to, member_limit=None):
+    if member_limit is None:
+        g_status['member_limit'] = DEFAULT_LIMIT_MEMBER_COUNT
+    else:
+        limit = int(unicodedata.normalize('NFKC', member_limit))
+        g_status['member_limit'] = limit
+
     start_message = 'はらぺこ軍団全員集合〜「{}」って応答するパッチョ'.format(' か、'.join(YES_MESSAGE_LIST))
+    if g_status['member_limit'] != DEFAULT_LIMIT_MEMBER_COUNT:
+        start_message += '\n {:d}人組で分けるパッチョ〜'.format(g_status['member_limit'])
     if how_to and '静か' in how_to:
         start_message += '(こっそり)'
         g_status['is_silent'] = True
@@ -78,6 +89,10 @@ def _reset_state():
 
 @respond_to('終了')
 def end(message):
+    if not g_status['is_open']:
+        message.send('何？')
+        return
+
     end_message = '募集終了だパッチョ '
     if g_status['is_silent']:
         end_message += '(こっそり)'
@@ -86,12 +101,11 @@ def end(message):
 
     print(g_status['attendee_list'])
     attendee_list = list(set(g_status['attendee_list']))
-
     # attendee_list をランダムに並び替え
     random.shuffle(attendee_list)
 
     # メンバー数上限に応じてチームを分割
-    splitted_attendee_list = _split_attendee_list(attendee_list, LIMIT_MEMBER_COUNT)
+    splitted_attendee_list = _split_attendee_list(attendee_list, g_status['member_limit'])
 
     # 各グループごとに名前をランダム生成してslackに通知
     for attendee_group in splitted_attendee_list:
