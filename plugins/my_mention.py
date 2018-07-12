@@ -1,14 +1,16 @@
 import math
 import random
 import unicodedata
+
 from slackbot.bot import listen_to, respond_to, settings
 
-from .utils.git_client import git_pull, get_hash
+from .utils.git_client import get_hash, git_pull
 
 g_status = {
     'is_open': False,
     'is_silent': False,
     'attendee_list': [],
+    'bento_attendee_list': [],
     'member_limit': None,
 }
 
@@ -21,6 +23,7 @@ KATAKANA |= {'チュ', 'チョ', 'リャ', 'リュ', 'リョ', 'ヴァ', 'ヴィ
 
 # YESと判断されるメッセージリスト
 YES_MESSAGE_LIST = ['はい', '行きます', 'おなかすいた']
+BENTO_MESSAGE_LIST = ['弁当', 'コンビニ']
 
 
 @listen_to('.+')
@@ -34,6 +37,10 @@ def listen(message):
             if message_text in YES_MESSAGE_LIST:
                 g_status['attendee_list'].append('<@{}>'.format(send_user))
                 message.react('+1')
+            if message_text in BENTO_MESSAGE_LIST:
+                g_status['bento_attendee_list'].append('<@{}>'.format(send_user))
+                message.react('+1')
+                message.react('bento')
     else:
         message.send('誰？')
 
@@ -47,6 +54,7 @@ def start(message, how_to, member_limit=None):
         g_status['member_limit'] = limit
 
     start_message = 'はらぺこ軍団全員集合〜「{}」って応答するパッチョ'.format(' か、'.join(YES_MESSAGE_LIST))
+    start_message += '\n オフィスでお弁当を食べたい人は「{}」って応答するパッチョ'.format(' か、'.join(BENTO_MESSAGE_LIST))
     if g_status['member_limit'] != DEFAULT_LIMIT_MEMBER_COUNT:
         start_message += '\n {:d}人組で分けるパッチョ〜'.format(g_status['member_limit'])
     if how_to and '静か' in how_to:
@@ -100,11 +108,9 @@ def end(message):
         end_message += '<!here>'
 
     print(g_status['attendee_list'])
+    # attendee_list をランダムに並び替え, メンバー数上限に応じてチームを分割
     attendee_list = list(set(g_status['attendee_list']))
-    # attendee_list をランダムに並び替え
     random.shuffle(attendee_list)
-
-    # メンバー数上限に応じてチームを分割
     splitted_attendee_list = _split_attendee_list(attendee_list, g_status['member_limit'])
 
     # 各グループごとに名前をランダム生成してslackに通知
@@ -113,6 +119,14 @@ def end(message):
         message.send('*チーム{}{}パッチョ*'.format(team_name[0], team_name[1]))
         for name in attendee_group:
             message.send(name)
+
+    # 弁当組
+    bento_attendee_list = list(set(g_status['bento_attendee_list']))
+    team_name = random.sample(KATAKANA, 1)
+    message.send('*チーム弁{}パッチョ*'.format(team_name[0]))
+    for name in bento_attendee_list:
+        message.send(name)
+
     # 募集状態のリセット
     _reset_state()
 
