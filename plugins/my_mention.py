@@ -93,6 +93,7 @@ def _reset_state():
     g_status['is_open'] = False
     g_status['is_silent'] = False
     g_status['attendee_list'] = []
+    g_status['bento_attendee_list'] = []
 
 
 @respond_to('終了')
