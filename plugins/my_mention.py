@@ -1,4 +1,6 @@
+import csv
 import math
+import numpy as np
 import random
 import unicodedata
 
@@ -15,11 +17,13 @@ g_status = {
 }
 
 DEFAULT_LIMIT_MEMBER_COUNT = 6
-KATAKANA = {chr(n) for n in range(ord(str('ァ')), ord(str('ヾ')))} - {'・', 'ヵ', 'ヶ'}
-KATAKANA -= {'ァ', 'ィ', 'ゥ', 'ェ', 'ォ', 'ッ', 'ャ', 'ュ', 'ョ', 'ヽ', 'ヾ', 'ヮ', 'ー', 'ン'}
-KATAKANA |= {'キャ', 'キュ', 'キョ', 'ギャ', 'ギュ', 'ギョ', 'シャ', 'シュ', 'ショ', 'ジャ', 'ジュ'}
-KATAKANA |= {'ジョ', 'ニャ', 'ニュ', 'ニョ', 'ミャ', 'ミュ', 'ミョ', 'ヒャ', 'ヒュ', 'ヒョ', 'チャ'}
-KATAKANA |= {'チュ', 'チョ', 'リャ', 'リュ', 'リョ', 'ヴァ', 'ヴィ', 'ヴェ', 'ー', 'ン'}
+KATAKANAS, WEIGHTS = [], []
+with open('data/char_scores.tsv', newline='') as f:
+    reader = csv.reader(f, delimiter='\t', quotechar='"')
+    for row in reader:
+        KATAKANAS.append(row[0])
+        WEIGHTS.append(int(row[1]))
+WEIGHTS = np.array(WEIGHTS) / sum(WEIGHTS)
 
 # YESと判断されるメッセージリスト
 YES_MESSAGE_LIST = ['はい', '行きます', 'おなかすいた']
@@ -116,14 +120,14 @@ def end(message):
 
     # 各グループごとに名前をランダム生成してslackに通知
     for attendee_group in splitted_attendee_list:
-        team_name = random.sample(KATAKANA, 2)
+        team_name = np.random.choice(KATAKANAS, 2, replace=False, p=WEIGHTS)
         message.send('*チーム{}{}パッチョ*'.format(team_name[0], team_name[1]))
         for name in attendee_group:
             message.send(name)
 
     # 弁当組
     bento_attendee_list = list(set(g_status['bento_attendee_list']))
-    team_name = random.sample(KATAKANA, 1)
+    team_name = np.random.choice(KATAKANAS, 1, replace=False, p=WEIGHTS)
     message.send('*チーム弁{}パッチョ*'.format(team_name[0]))
     for name in bento_attendee_list:
         message.send(name)
