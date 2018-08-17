@@ -142,7 +142,7 @@ def deploy(message):
 
 
 @respond_to('バージョン')
-def deploy(message):
+def version(message):
     current_hash = get_hash()
     message.send('現在のぱっちょのバージョンは[{}] だぱっちょ'.format(current_hash))
 
