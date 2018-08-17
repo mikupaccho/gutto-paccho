@@ -127,10 +127,11 @@ def end(message):
 
     # 弁当組
     bento_attendee_list = list(set(g_status['bento_attendee_list']))
-    team_name = np.random.choice(KATAKANAS, 1, replace=False, p=WEIGHTS)
-    message.send('*チーム弁{}パッチョ*'.format(team_name[0]))
-    for name in bento_attendee_list:
-        message.send(name)
+    if bento_attendee_list:
+        team_name = random.sample(KATAKANA, 1)
+        message.send('*チーム弁{}パッチョ*'.format(team_name[0]))
+        for name in bento_attendee_list:
+            message.send(name)
 
     # 募集状態のリセット
     _reset_state()
