@@ -1,9 +1,11 @@
 import math
+import numpy as np
 import random
 import unicodedata
 
 from slackbot.bot import listen_to, respond_to, settings
 
+from .katakana import get_katakanas_and_weights
 from .utils.git_client import get_hash, git_pull
 
 g_status = {
@@ -15,11 +17,7 @@ g_status = {
 }
 
 DEFAULT_LIMIT_MEMBER_COUNT = 6
-KATAKANA = {chr(n) for n in range(ord(str('ァ')), ord(str('ヾ')))} - {'・', 'ヵ', 'ヶ'}
-KATAKANA -= {'ァ', 'ィ', 'ゥ', 'ェ', 'ォ', 'ッ', 'ャ', 'ュ', 'ョ', 'ヽ', 'ヾ', 'ヮ', 'ー', 'ン'}
-KATAKANA |= {'キャ', 'キュ', 'キョ', 'ギャ', 'ギュ', 'ギョ', 'シャ', 'シュ', 'ショ', 'ジャ', 'ジュ'}
-KATAKANA |= {'ジョ', 'ニャ', 'ニュ', 'ニョ', 'ミャ', 'ミュ', 'ミョ', 'ヒャ', 'ヒュ', 'ヒョ', 'チャ'}
-KATAKANA |= {'チュ', 'チョ', 'リャ', 'リュ', 'リョ', 'ヴァ', 'ヴィ', 'ヴェ', 'ー', 'ン'}
+KATAKANAS, WEIGHTS = get_katakanas_and_weights(settings.CHAR_SCORES_FILE_PATH)
 
 # YESと判断されるメッセージリスト
 YES_MESSAGE_LIST = ['はい', '行きます', 'おなかすいた']
@@ -116,7 +114,7 @@ def end(message):
 
     # 各グループごとに名前をランダム生成してslackに通知
     for attendee_group in splitted_attendee_list:
-        team_name = random.sample(KATAKANA, 2)
+        team_name = np.random.choice(KATAKANAS, 2, replace=False, p=WEIGHTS)
         message.send('*チーム{}{}パッチョ*'.format(team_name[0], team_name[1]))
         for name in attendee_group:
             message.send(name)
@@ -124,7 +122,7 @@ def end(message):
     # 弁当組
     bento_attendee_list = list(set(g_status['bento_attendee_list']))
     if bento_attendee_list:
-        team_name = random.sample(KATAKANA, 1)
+        team_name = np.random.choice(KATAKANAS, 1, replace=False, p=WEIGHTS)
         message.send('*チーム弁{}パッチョ*'.format(team_name[0]))
         for name in bento_attendee_list:
             message.send(name)
@@ -144,7 +142,7 @@ def deploy(message):
 
 
 @respond_to('バージョン')
-def deploy(message):
+def version(message):
     current_hash = get_hash()
     message.send('現在のぱっちょのバージョンは[{}] だぱっちょ'.format(current_hash))
 
