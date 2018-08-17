@@ -1,4 +1,3 @@
-import csv
 import math
 import numpy as np
 import random
@@ -6,6 +5,7 @@ import unicodedata
 
 from slackbot.bot import listen_to, respond_to, settings
 
+from .katakana import get_katakanas_and_weights
 from .utils.git_client import get_hash, git_pull
 
 g_status = {
@@ -17,13 +17,7 @@ g_status = {
 }
 
 DEFAULT_LIMIT_MEMBER_COUNT = 6
-KATAKANAS, WEIGHTS = [], []
-with open('data/char_scores.tsv', newline='') as f:
-    reader = csv.reader(f, delimiter='\t', quotechar='"')
-    for row in reader:
-        KATAKANAS.append(row[0])
-        WEIGHTS.append(int(row[1]))
-WEIGHTS = np.array(WEIGHTS) / sum(WEIGHTS)
+KATAKANAS, WEIGHTS = get_katakanas_and_weights(settings.CHAR_SCORES_FILE_PATH)
 
 # YESと判断されるメッセージリスト
 YES_MESSAGE_LIST = ['はい', '行きます', 'おなかすいた']
@@ -128,7 +122,7 @@ def end(message):
     # 弁当組
     bento_attendee_list = list(set(g_status['bento_attendee_list']))
     if bento_attendee_list:
-        team_name = random.sample(KATAKANA, 1)
+        team_name = np.random.choice(KATAKANAS, 1, replace=False, p=WEIGHTS)
         message.send('*チーム弁{}パッチョ*'.format(team_name[0]))
         for name in bento_attendee_list:
             message.send(name)
