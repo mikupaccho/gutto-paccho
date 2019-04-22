@@ -1,8 +1,8 @@
 import math
-import numpy as np
 import random
 import unicodedata
 
+import numpy as np
 from slackbot.bot import listen_to, respond_to, settings
 
 from .katakana import get_katakanas_and_weights
@@ -16,7 +16,7 @@ g_status = {
     'member_limit': None,
 }
 
-DEFAULT_LIMIT_MEMBER_COUNT = 6
+DEFAULT_LIMIT_MEMBER_COUNT = 4
 KATAKANAS, WEIGHTS = get_katakanas_and_weights(settings.CHAR_SCORES_FILE_PATH)
 
 # YESと判断されるメッセージリスト
