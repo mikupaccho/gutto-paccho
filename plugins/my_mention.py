@@ -6,7 +6,7 @@ import numpy as np
 from slackbot.bot import listen_to, respond_to, settings
 
 from .katakana import get_katakanas_and_weights
-from .utils.git_client import get_hash, git_pull
+from .utils.git_client import get_hash
 
 g_status = {
     'is_open': False,
@@ -129,16 +129,6 @@ def end(message):
 
     # 募集状態のリセット
     _reset_state()
-
-
-@respond_to('デプロイ')
-def deploy(message):
-    request_user_name = _get_user_name(message)
-    if request_user_name in settings.ADMIN_USER_NAME_LIST:
-        message.send('デプロイするぱっちょ')
-        git_pull()
-    else:
-        message.send('{} はデプロイするには権限が足りないぱっちょ'.format(request_user_name))
 
 
 @respond_to('バージョン')
