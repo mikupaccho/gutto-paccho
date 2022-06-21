@@ -1,6 +1,6 @@
 chardet==3.0.4
 idna==2.6
-numpy==1.17.0
+numpy==1.22.0
 pywatcher==0.4.0
 requests==2.18.4
 six==1.11.0
